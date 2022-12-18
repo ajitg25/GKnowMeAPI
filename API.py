@@ -1,17 +1,12 @@
 from flask import Flask,render_template,request, flash,redirect,url_for
 from werkzeug.utils import secure_filename 
-from werkzeug.datastructures import FileStorage
 import PIL
 import numpy
-import os
 import cv2
 import pytesseract
-import csv
 import json
 import re
-from PIL import Image
 from flask import jsonify
-from flask_restful import Api, Resource, reqparse
 
 pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
@@ -28,11 +23,11 @@ def gen_csv_json(text):
     TestNameSimilar = ["Test Name","Investigation","Parameter"]
 
     # first row of csvFile 
-    fields = ['Test', 'Test Value', 'Unit', 'Range'] 
+    # fields = ['Test', 'Test Value', 'Unit', 'Range'] 
     rows = []
 
     # name of csv file 
-    filename = "labrep1api.csv"
+    # filename = "labrep1api.csv"
 
     patient_details = {}
 
@@ -76,16 +71,16 @@ def gen_csv_json(text):
                         'reference': i[2]
                     }
         
-            with open(filename, 'w') as csvfile: 
+            # with open(filename, 'w') as csvfile: 
             
-                # creating a csv writer object 
-                csvwriter = csv.writer(csvfile) 
+            #     # creating a csv writer object 
+            #     csvwriter = csv.writer(csvfile) 
                 
-                # writing the fields 
-                csvwriter.writerow(fields) 
+            #     # writing the fields 
+            #     csvwriter.writerow(fields) 
                 
-                # writing the data rows 
-                csvwriter.writerows(rows)
+            #     # writing the data rows 
+            #     csvwriter.writerows(rows)
             
             patient_details['results'] = test_results
             json_data = json.dumps(patient_details, indent=4)
@@ -208,11 +203,4 @@ def upload_file():
             return jsonData
 
 if __name__ == "__main__":
-    # Quick test configuration. Please use proper Flask configuration options
-    # in production settings, and use a separate file or environment variables
-    # to manage the secret key!
-    app.secret_key = 'super secret key'
-    app.config['SESSION_TYPE'] = 'filesystem'
-
-    sess.init_app(app)
     app.run(debug=True)
