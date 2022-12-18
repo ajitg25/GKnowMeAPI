@@ -201,6 +201,8 @@ def upload_file():
             jsonData = gen_csv_json(text)
 
             return jsonData
-
+@app.route('/')
+def home():
+    return "Hello"
 if __name__ == "__main__":
     app.run(debug=True)
