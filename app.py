@@ -201,6 +201,12 @@ def upload_file():
             jsonData = gen_csv_json(text)
 
             return jsonData
+            if jsonData:
+                return jsonData
+            else:
+                return "server returning null"
+    else:
+        return "server running/ no files uploaded"
 @app.route('/')
 def home():
     return "Hello"
