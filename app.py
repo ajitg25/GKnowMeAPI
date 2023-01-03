@@ -1,3 +1,4 @@
+import os
 from flask import Flask,render_template,request, flash,redirect,url_for
 from werkzeug.utils import secure_filename 
 import PIL
@@ -7,10 +8,15 @@ import pytesseract
 import json
 import re
 from flask import jsonify
+from waitress import serve
+from difflib import get_close_matches
 
-# pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+
+pytesseract.pytesseract.tesseract_cmd = "Tesseract-OCR//tesseract.exe"
+tessdata_dir_config = '--tessdata-dir "Tesseract-OCR/tessdata"'
 
 app = Flask(__name__)
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
@@ -19,7 +25,10 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def gen_csv_json(text):
-    # All synonyms of Testname 
+    # All synonyms of Testname
+    print("helllo") 
+    print(text)
+    print("---------hello--------------")
     TestNameSimilar = ["Test Name","Investigation","Parameter"]
 
     # first row of csvFile 
@@ -30,7 +39,7 @@ def gen_csv_json(text):
     # filename = "labrep1api.csv"
 
     patient_details = {}
-
+    json_data =""
     test_results = {}
     # print(text)
     flag = False
@@ -39,11 +48,12 @@ def gen_csv_json(text):
             continue
         if(i[0]==' ' or i[0]=='  '):
             continue
-
-        if i[0] in TestNameSimilar:
+        words_val = get_close_matches(i[0], TestNameSimilar)
+        if words_val!=[]:
             flag = True
             continue
-            
+        
+        print(flag)
         if flag== True:
             # print(i)
             i.remove('  ')
@@ -56,6 +66,7 @@ def gen_csv_json(text):
                 }
         
             elif(len(i)==3):
+                # print(i)
                 if(re.findall(r"[-+]?(?:\d*\.*\d+)", i[1])!=[]):
                     rows.append([i[0], i[1]," ", i[2]])
                     test_results[i[0]] = {
@@ -81,7 +92,7 @@ def gen_csv_json(text):
                 
             #     # writing the data rows 
             #     csvwriter.writerows(rows)
-            
+            # print(test_results)
             patient_details['results'] = test_results
             json_data = json.dumps(patient_details, indent=4)
             
@@ -90,6 +101,7 @@ def gen_csv_json(text):
             #     outfile.write(json_data)
     # return jsonify({"fields": fields,"rows":rows})  #returning of csv in form of list
     # print(rows)
+    print(json_data)
     return json_data  #returning json_data
 
 def sort_coord(CoOrd):
@@ -121,6 +133,9 @@ def sort_coord(CoOrd):
     for i in range(len(text)):
         text[i] = text[i].split("   ")
         text[i] = list(filter(lambda x: x != '', text[i]))
+
+    print(text)
+    print(".........................................................")
     return text
 
 def get_coord(img,contours):
@@ -140,14 +155,20 @@ def get_coord(img,contours):
 
         # Cropping the text block for giving input to OCR
         cropped = img[y:y + h, x:x + w]
-    
-        # Apply OCR on the cropped image
-        text = pytesseract.image_to_string(cropped)
+        # print(cropped)
+        # try:
+
         
+        text = pytesseract.image_to_string(cropped)
         all_coord[(y,x)] = text
+        # except:
+        #     print("OK")
+    cv2.imwrite("test.jpg", img)
     # cv2.imshow('Rectangle',img)
     # cv2.waitKey(0)
     # cv2.destroyWindow('Rectangle')
+    print(all_coord)
+    print("-----------------------------------------------------------")
     return all_coord
 
 def img_process(img):
@@ -197,18 +218,23 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             img = numpy.asarray(PIL.Image.open(file.stream))
+            # img = cv2.imread(file.stream)
+            print(img)
             text = img_process(img)
+            # print(text)
             jsonData = gen_csv_json(text)
 
-            return jsonData
             if jsonData:
                 return jsonData
             else:
                 return "server returning null"
     else:
         return "server running/ no files uploaded"
+
 @app.route('/')
 def home():
     return "Hello"
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    serve(app, host='0.0.0.0',port=5000,threads=2)
+
