@@ -4,7 +4,7 @@
 
 The GKnowMe API is designed to extract text details from lab reports, excluding personal information, and store them in the same format as visible in the lab report. The extracted information is then linked to a unique user ID, such as Aadhar card, and stored in a Blockchain network for secure access and tamper-proof storage.
 
-#API Working:
+# API Working:
 **Upload Lab Report:** The user uploads a lab report file to the API portal.
 
 **File Validation:** The API checks if the uploaded file is in one of the supported image formats, such as PNG, JPG, or JPEG. If the file is valid, the API proceeds to the next step.
